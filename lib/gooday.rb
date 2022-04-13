@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "gooday/version"
+require "gooday/version"
+require "gooday/index"
 
 module Gooday
-  class Error < StandardError; end
-  # Your code goes here...
+  def self.new(context)
+    Gooday::Date.new(context)
+  end
 end
