@@ -29,12 +29,24 @@ module Gooday
       @zone = context.zone
     end
 
-    def locale(locale)
-      raise Gooday::Error, "#{locale.inspect} doesn't exist as a locale format" unless File.exist?("./lib/gooday/locales/#{locale}.rb")
+    def locale(locale, target: "ruby", path: nil)
+      if target.downcase.match?(/yml/)
+        raise Gooday::Error, "#{locale.inspect} doesn't exist as a locale format" unless File.exist?(path.nil? ? "./lib/gooday/locales/#{locale}.yml" : "#{path}/#{locale}.yml")
 
-      require File.expand_path("./locales/#{locale}", File.dirname(__FILE__))
-      @translations = Gooday::Locales.method(locale.to_s.downcase).call
-      $LOAD_PATH.unshift(File.expand_path("./locales/#{locale}", File.expand_path(__FILE__)))
+        require "gooday/yaml_parser"
+        @translations = YAMLParser.new(path.nil? ? "./lib/gooday/locales/#{locale}.yml" : "#{path}/#{locale}.yml").translations.transform_keys(&:to_sym)
+      else
+        raise Gooday::Error, "#{locale.inspect} doesn't exist as a locale format" unless File.exist?(path.nil? ? "./lib/gooday/locales/#{locale}.rb" : "#{path}/#{locale}.rb")
+
+        require File.expand_path("./locales/#{locale}", File.dirname(__FILE__))
+        missing_keys = %i[short long days months short_days short_months formats regexes].each_with_object([]) do |key, arr|
+          arr << key unless Gooday::Locales.method(locale.to_s.downcase).call[key]
+        end
+        raise Gooday::Error, "#{locale.inspect} is missing the following keys: #{missing_keys.join(", ")}" unless missing_keys.empty?
+
+        @translations = Gooday::Locales.method(locale.to_s.downcase).call
+        $LOAD_PATH.unshift(File.expand_path("./locales/#{locale}", File.expand_path(__FILE__)))
+      end
     end
 
     def format(format_string)
@@ -56,6 +68,19 @@ module Gooday
       ]
 
       format_string.gsub(/\w+/) { |match| matches[match.to_sym] || match }
+    end
+
+    def to_hash
+      Hash[
+        :year => @year,
+        :month => @month,
+        :day => @day,
+        :wday => @wday,
+        :hour => @hour,
+        :min => @min,
+        :sec => @sec,
+        :zone => @zone
+      ]
     end
 
     def to_s

@@ -1,0 +1,8 @@
+---
+short: fr
+long: Français
+months: [Janvier, Février, Mars, Avril, Mai, Juin, Juillet, Août, Septembre, Octobre, Novembre, Décembre]
+days: [Lundi, Mardi, Mercredi, Jeudi, Vendredi, Samedi, Dimanche]
+short_days: [Lun, Mar, Mer, Jeu, Ven, Sam, Dim]
+short_months: [Jan, Fév, Mar, Avr, Mai, Jun, Jul, Aoû, Sep, Oct, Nov, Déc]
+regexes: []
