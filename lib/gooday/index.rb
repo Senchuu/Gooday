@@ -18,7 +18,7 @@ module Gooday
     end
 
     def init(context = @context)
-      Date.attr_accessor :year, :month, :day, :hour, :min, :sec, :zone
+      Date.attr_accessor :year, :month, :day, :wday, :hour, :min, :sec, :zone
       @year = context.year
       @month = context.month
       @day = context.day
@@ -70,6 +70,32 @@ module Gooday
       format_string.gsub(/\w+/) { |match| matches[match.to_sym] || match }
     end
 
+    def set(year: nil, month: nil, day: nil, hour: nil, min: nil, sec: nil, zone: nil)
+      month = @translations[:months].index(month) + 1 || nil if month.is_a?(String)
+      init(Class.new(DateTime) do
+        def initialize(year, month, day, hour, min, sec, zone)
+          @year = year
+          @month = month
+          @day = day
+          @hour = hour
+          @min = min
+          @sec = sec
+          @zone = zone
+        end
+      end.new(year || @year, month || @month, day || @day, hour || @hour, min || @min, sec || @sec, zone || @zone))
+    end
+
+    def add(years: 0, months: 0, days: 0, hours: 0, mins: 0, secs: 0)
+      set(
+        :year => @year + years,
+        :month => @month + months,
+        :day => @day + days,
+        :hour => @hour + hours,
+        :min => @min + mins,
+        :sec => @sec + secs
+      )
+    end
+
     def to_hash
       Hash[
         :year => @year,
@@ -81,6 +107,10 @@ module Gooday
         :sec => @sec,
         :zone => @zone
       ]
+    end
+
+    def clone
+      Date.new(DateTime.new(@year, @month, @day, @hour, @min, @sec))
     end
 
     def to_s
