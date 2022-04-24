@@ -14,7 +14,3 @@ module Gooday
     end
   end
 end
-
-class String
-  def parse; end
-end

@@ -3,6 +3,11 @@
 module Gooday
   # Constants
   module Constants
-    DATE_FORMATS = Hash[]
+    YEAR = "year"
+    MONTH = "month"
+    DAY = "day"
+    HOUR = "hour"
+    MINUTE = "minute"
+    SECOND = "second"
   end
 end

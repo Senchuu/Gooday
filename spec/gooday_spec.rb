@@ -8,16 +8,21 @@ RSpec.describe Gooday do
   end
 
   it "works" do
-    gooday = Gooday::Date.new(Time.now)
-    p gooday.translations
-    expect(gooday.month).to be 4
+    gooday = Gooday.new(Time.now)
+    gooday.set(:month => "April", :day => 2, :year => 2020)
+    expect(gooday.month).to eq 4
+    gooday.locale("fr")
+    clone = gooday.clone
+    clone.locale("en")
+    p gooday.format("DD D MM YYYY")
+    p clone.format("DD D MM YYYY")
   end
 
   it "checks if an object is a gooday" do
     expect(gooday?(Date.new)).to be false
   end
 
-  it "has a valid duration module" do
+  it "has a valid timestamp module" do
     Gooday::Date.include(Gooday::Modules::Timestamps)
     expect(Gooday.new(Time.now).to_timestamp.to_gooday).not_to be nil
   end
@@ -30,10 +35,16 @@ RSpec.describe Gooday do
 
   it "string_parser" do
     require "gooday/modules/string_parser"
-    Gooday::Date.include(Gooday::Modules::StringParser)
+    Gooday.module(Gooday::Modules::StringParser)
     date = Gooday.new(Time.now)
     date.locale("fr")
     parsed = date.parse_string("Nous sommes le 17/02/2021. Demain nous serons le 18 Février 2021")
-    p parsed.map { |p| p.format("DD D MM YYYY") }
+    expect(parsed).to be_an(Array)
+  end
+
+  it "add & set" do
+    gooday = Gooday.new(Time.now)
+    gooday.add(:days => 1)
+    expect(gooday.day).to eq Time.now.to_datetime.day + 1
   end
 end
