@@ -44,7 +44,9 @@ RSpec.describe Gooday do
 
   it "add & set" do
     gooday = Gooday.new(Time.now)
-    gooday.add(:days => 1)
-    expect(gooday.day).to eq Time.now.to_datetime.day + 1
+    gooday.set(:month => "April", :day => 2, :year => 2020)
+    gooday.add(:days => 28)
+    gooday.locale("fr")
+    p gooday.format("DD D MM YYYY")
   end
 end

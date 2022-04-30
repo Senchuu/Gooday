@@ -22,7 +22,7 @@ module Gooday
       @year = context.year
       @month = context.month
       @day = context.day
-      @wday = context.wday
+      @wday = context.wday || @wday
       @hour = context.hour
       @min = context.min
       @sec = context.sec
@@ -86,10 +86,25 @@ module Gooday
     end
 
     def add(years: 0, months: 0, days: 0, hours: 0, mins: 0, secs: 0)
+      calculated_days = nil
+      loop do
+        month_days = Time.__send__(:month_days, @year, @month)
+        calculated_days ||= @day + days
+        break if month_days >= calculated_days
+
+        calculated_days -= month_days
+        if @month == 12
+          @year += 1
+          @month = 1
+        else
+          @month += 1
+        end
+      end
+
       set(
         :year => @year + years,
         :month => @month + months,
-        :day => @day + days,
+        :day => calculated_days || @day + days,
         :hour => @hour + hours,
         :min => @min + mins,
         :sec => @sec + secs
