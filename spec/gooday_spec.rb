@@ -28,9 +28,9 @@ RSpec.describe Gooday do
   end
 
   it "YAML parser" do
-    require "gooday/yaml_parser"
-
-    p Gooday::YAMLParser.new("spec/locales/fr.yml").translations
+    gooday = Gooday.new(Time.now)
+    gooday.locale("fr", target:"ruby", path: "./spec/locales")
+    expect(gooday.translations[:short_months][4]).to eq "Mai"
   end
 
   it "string_parser" do
@@ -47,6 +47,6 @@ RSpec.describe Gooday do
     gooday.set(:month => "April", :day => 2, :year => 2020)
     gooday.add(:days => 28)
     gooday.locale("fr")
-    p gooday.format("DD D MM YYYY")
+    p gooday.format("Le DD D MM YYYY à hh h mm")
   end
 end

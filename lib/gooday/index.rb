@@ -29,23 +29,30 @@ module Gooday
       @zone = context.zone
     end
 
-    def locale(locale, target: "ruby", path: nil)
-      if target.downcase.match?(/yml/)
-        raise Gooday::Error, "#{locale.inspect} doesn't exist as a locale format" unless File.exist?(path.nil? ? "./lib/gooday/locales/#{locale}.yml" : "#{path}/#{locale}.yml")
+    def locale(locale, path: false, target: "ruby")
+      if target.downcase.match?(/^(yml|yaml)/)
+        raise Gooday::Error, "#{locale.inspect} doesn't exist as a YAML locale format" unless File.exist?(File.expand_path("#{locale}.yml", path))
 
         require "gooday/yaml_parser"
-        @translations = YAMLParser.new(path.nil? ? "./lib/gooday/locales/#{locale}.yml" : "#{path}/#{locale}.yml").translations.transform_keys(&:to_sym)
+        @translations = YAMLParser.new(File.expand_path("#{locale}.yml", path))
+                                  .translations.transform_keys(&:to_sym)
       else
-        raise Gooday::Error, "#{locale.inspect} doesn't exist as a locale format" unless File.exist?(path.nil? ? "./lib/gooday/locales/#{locale}.rb" : "#{path}/#{locale}.rb")
+        raise Gooday::Error, "#{locale.inspect} doesn't exist as a RUBY locale format" unless File.exist?(path ? File.expand_path("#{locale}.rb", path) : "./lib/gooday/locales/#{locale}.rb")
 
-        require File.expand_path("./locales/#{locale}", File.dirname(__FILE__))
+        file = if path
+                 File.expand_path("#{locale}.rb", path)
+               else
+                 File.expand_path("./locales/#{locale}.rb", File.dirname(__FILE__))
+               end
+        load file
+
         missing_keys = %i[short long days months short_days short_months formats regexes].each_with_object([]) do |key, arr|
           arr << key unless Gooday::Locales.method(locale.to_s.downcase).call[key]
         end
         raise Gooday::Error, "#{locale.inspect} is missing the following keys: #{missing_keys.join(", ")}" unless missing_keys.empty?
 
         @translations = Gooday::Locales.method(locale.to_s.downcase).call
-        $LOAD_PATH.unshift(File.expand_path("./locales/#{locale}", File.expand_path(__FILE__)))
+        $LOAD_PATH.unshift(file)
       end
     end
 
@@ -137,3 +144,4 @@ end
 def gooday?(object)
   object.is_a?(Gooday::Date)
 end
+
